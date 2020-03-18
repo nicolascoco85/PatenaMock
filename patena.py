@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import json
 import os
 import errno
 import random
 import sys
+from datetime import date
 
 
 def create_directory(name):
@@ -14,34 +16,35 @@ def create_directory(name):
         if e.errno != errno.EEXIST:
             raise
 
+def getJson():
+    data = {'Error': {'description': 'Error parametros invalidos', 'date': str(date.today)}}
+
+    if SonArgumentosValidos():
+        if sys.argv.__contains__("--noMutations"):
+            data = resultAnalyze
+        else:
+            data = resultDesign
+
+    return data
+
+def getName(DATA_RESULT):
+    if json.dumps(DATA_RESULT).__contains__('Error'):
+        return "error"
+
+    return "results"
 
 def create_file(path):
-    DATA_RESULT = "MOCKQVCLTAELGLIL"
-    file = open(path + "/sequenceFASTA", "w")
-    file.write(">gi" + os.linesep)
+    DATA_RESULT = getJson()
     if path.__contains__(DIR_ROOT_INPUT):
+        file = open(path + "/input.json", "w")
         file.write(MOCK_INPUT_DATA)
     if path.__contains__(DIR_ROOT_OUTPUT):
-        DATA_RESULT = MOCK_OUTPUT_DATA
-        file.write(DATA_RESULT)
-    else:
-        file.write(DATA_RESULT)
+        filename = getName(DATA_RESULT)
+        file = open(path + "/" + filename + ".json", "w")
+        file.write(str(DATA_RESULT))
     file.close()
     return DATA_RESULT
 
-
-DIR_ROOT_INPUT = 'Input'
-DIR_ROOT_OUTPUT = 'Output'
-MOCK_INPUT_DATA = 'MOCKQVCLTAELGLIL'
-MOCK_OUTPUT_DATA = 'MOCKFINALRESULTTAELGLIL'
-
-cantDeArgumentos = len(sys.argv)
-action = ""
-parameter_action = ""
-
-
-# print(cantDeArgumentos)
-# print sys.argv
 def SonArgumentosValidos():
     composition = "average"
     userComposition = {"A": -999, "R": -999, "N": -999, "D": -999, "C": -999, "E": -999, "Q": -999, "G": -999,
@@ -52,8 +55,8 @@ def SonArgumentosValidos():
 
     valido = True
     index = 0
-    print ("cantidad de argumentos",len(sys.argv))
-    while valido == True and index < len(sys.argv)-2:
+    #   print ("cantidad de argumentos", len(sys.argv))
+    while valido == True and index < len(sys.argv) - 2:
         index = index + 1
         arg = sys.argv[index]
         if (arg == '--length') and (index < len(sys.argv)):
@@ -180,7 +183,7 @@ def SonArgumentosValidos():
         elif (arg == '--detailed') and (index < len(sys.argv)):  # print detailed output for each (to output file)
             detailed_output = True
             detailedOutFile = open(sys.argv[index + 1], 'w')
-            index=index+1
+            index = index + 1
         elif (arg == '--minoutput') and (index < len(sys.argv)):
             minimalOutput = True
             logsPath = sys.argv[index + 1]
@@ -197,51 +200,60 @@ def SonArgumentosValidos():
         else:
             valido = False
 
-
-
     return valido
 
 
-"""if cantDeArgumentos == 3:
-    action = sys.argv[1]
-    parameter_action = sys.argv[2]
+DIR_ROOT_INPUT = 'Input'
+DIR_ROOT_OUTPUT = 'Output'
+MOCK_INPUT_DATA = 'MOCKQVCLTAELGLIL'
 
-    if action.__contains__('--seq'):
-        print "Iniciando secuencia...", parameter_action
+resultAnalyze = {
+    "analysis": {
+        "blast": {
+            "prop1": "value1",
+            "prop2": "value2"
+        },
+        "otro": {
+            "prop3": "value3"
+        }
+    }
+}
+resultDesign = {
+    "design": {
+        "initialSequence": "ABC",
+        "finalSequence": "DEF",
+        "steps": [
+            {
+                "changed": "(A) -> D ", "score": "1"
+            }
+        ]
+    }
+}
 
-    if action.__contains__('--length'):
-        print "Iniciando secuencia con longitud...", parameter_action
+cantDeArgumentos = len(sys.argv)
+action = ""
+parameter_action = ""
 
-if cantDeArgumentos == 2:
-    action = sys.argv[1]
-    if action == "--verbose":
-        print("El resultado final se mostrara en consola tambien")"""
+create_directory(DIR_ROOT_INPUT)
+create_directory(DIR_ROOT_OUTPUT)
 
-if SonArgumentosValidos():
+Id = random.randrange(1000, 9999)
 
-    create_directory(DIR_ROOT_INPUT)
-    create_directory(DIR_ROOT_OUTPUT)
+print(" Procesando su cadena...")
+print("Su Id de proceso: " + str(Id))
 
-    Id = random.randrange(1000, 9999)
+PATH_INPUT = DIR_ROOT_INPUT + '/' + str(Id)
+PATH_OUTPUT = DIR_ROOT_OUTPUT + '/' + str(Id)
 
-    print(" Procesando su cadena...")
-    print("Su Id de proceso: " + str(Id))
+create_directory(PATH_INPUT)
+create_directory(PATH_OUTPUT)
 
-    PATH_INPUT = DIR_ROOT_INPUT + '/' + str(Id)
-    PATH_OUTPUT = DIR_ROOT_OUTPUT + '/' + str(Id)
+create_file(PATH_INPUT)
+result_log = create_file(PATH_OUTPUT)
 
-    create_directory(PATH_INPUT)
-    create_directory(PATH_OUTPUT)
+print ("Generando archivos de input y output")
 
-    create_file(PATH_INPUT)
-    result_log = create_file(PATH_OUTPUT)
+if sys.argv.__contains__('--verbose'):
+    print (result_log)
 
-    print ("Generando archivos de input y output")
-
-    if action.__contains__('--verbose'):
-        print (result_log)
-
-    print ("FIN DEL PROCESO")
-
-else:
-    print("Argumentos invalidos")
+print ("FIN DEL PROCESO")
