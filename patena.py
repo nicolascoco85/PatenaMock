@@ -3,7 +3,6 @@
 import json
 import os
 import errno
-import random
 import sys
 from datetime import date
 
@@ -16,22 +15,27 @@ def create_directory(name):
         if e.errno != errno.EEXIST:
             raise
 
+
 def getJson():
-    data = {'Error': {'description': 'Error parametros invalidos', 'date': str(date.today)}}
+    data = {'error': {'description': 'Error parametros invalidos', 'date': str(date.today)}}
 
     if SonArgumentosValidos():
         if sys.argv.__contains__("--noMutations"):
             data = resultAnalyze
         else:
             data = resultDesign
+    else:
+        data = {'error': {'description': 'Error parametros invalidos', 'date': str(date.today)}}
 
     return data
 
-def getName(DATA_RESULT):
-    if json.dumps(DATA_RESULT).__contains__('Error'):
+
+def getName():
+    if not SonArgumentosValidos():
         return "error"
 
     return "results"
+
 
 def create_file(path):
     DATA_RESULT = getJson()
@@ -39,168 +43,48 @@ def create_file(path):
         file = open(path + "/input.json", "w")
         file.write(MOCK_INPUT_DATA)
     if path.__contains__(DIR_ROOT_OUTPUT):
-        filename = getName(DATA_RESULT)
+        filename = getName()
         file = open(path + "/" + filename + ".json", "w")
         file.write(str(DATA_RESULT))
     file.close()
     return DATA_RESULT
 
-def SonArgumentosValidos():
-    composition = "average"
-    userComposition = {"A": -999, "R": -999, "N": -999, "D": -999, "C": -999, "E": -999, "Q": -999, "G": -999,
-                       "H": -999,
-                       "I": -999, "L": -999, "K": -999, "M": -999, "F": -999, "P": -999, "S": -999, "T": -999,
-                       "W": -999,
-                       "Y": -999, "V": -999}
 
+def SonArgumentosValidos():
+    validArguments = ['--seq', 'length', '--beta', '--noMutations', '--db', '--blastweb', '--uvsilent', '--netcharge',
+                      '--nopasta', '--noprosite', '--notango', '--noblast', '--verbose', '--noblast', '--notango',
+                      '--noiupred',
+                      '--noelm', '--noanchor', '--noprosite', '--nolimbo', '--notmhmm', '--nopasta', '--nowaltz',
+                      '--noamyloidpattern',
+                      '--maxiterations', '--detailed', '--verbose', '--minoutput', '--testoutput', '--gettime',
+                      '--jobid', '-a', '-r', '-n',
+                      '-d', '-c', '-q', '-e', '-g', '-h', '-i', '-l', '-k', '-m', '-f', '-p', 's', '-t', '-w', '-y',
+                      '-v']
     valido = True
     index = 0
-    #   print ("cantidad de argumentos", len(sys.argv))
-    while valido == True and index < len(sys.argv) - 2:
-        index = index + 1
+
+    while valido and index < len(sys.argv):
         arg = sys.argv[index]
-        if (arg == '--length') and (index < len(sys.argv)):
-            length = int(sys.argv[index + 1])
-        elif (arg == '--beta') and (index < len(sys.argv)):
-            beta = float(sys.argv[index + 1])
-        elif (arg == '--seq') and (index < len(sys.argv)):
-            sequence = sys.argv[index + 1]
-            length = len(sequence)
-            rand = False
-            index = index + 1
-        elif arg == '--noMutations':
-            global_evaluation = True
-        elif (arg == '--db') and (index < len(sys.argv)):
-            database = sys.argv[index + 1]
-        elif arg == '--blastweb':
-            blastWeb = True
-        elif arg == '--uvsilent':
-            uvsilent = True
-        elif (arg == '--netcharge') and (index < len(sys.argv)):
-            targetNetCharge = int(sys.argv[index + 1])
-            evaluateNetCharge = True
+        print (arg)
+        if (arg[0] == '-') or (arg[0] == '-' and arg[1] == '-'):
+            valido = arg in validArguments
 
-
-        ##   SELECT WHICH TOOLS WONT ME EVALUATED
-        elif (arg == '--noblast'):
-            runBlast = False
-        elif (arg == '--notango'):
-            runTango = False
-        elif (arg == '--noelm'):
-            runElm = False
-        elif (arg == '--noiupred'):
-            runIupred = False
-        elif (arg == '--noanchor'):
-            runAnchor = False
-        elif (arg == '--noprosite'):
-            runProsite = False
-        elif (arg == '--nolimbo'):
-            runLimbo = False
-        elif (arg == '--notmhmm'):
-            runTmhmm = False
-        elif (arg == '--nopasta'):
-            runPasta = False
-        elif (arg == '--nowaltz'):
-            runWaltz = False
-        elif (arg == '--noamyloidpattern'):
-            runAmyloidPattern = False
-
-        elif (arg == '--maxiterations') and (index < len(sys.argv)):
-            maxIterations = int(sys.argv[index + 1])
-
-            # CHECK IF THE USER DEFINED ANY OF THE AAs FREQUENCIES
-
-        # elif (arg== '--composition') and (index < len(sys.argv)):
-        # composition = sys.argv[index+1]
-        # if (composition=="user_specified"):  #frequencies specified by parameter
-        # for j in range(index+2,len(sys.argv),2):
-        elif (arg == '-a'):
-            userComposition['A'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-r'):
-            userComposition['R'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-n'):
-            userComposition['N'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-d'):
-            userComposition['D'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-c'):
-            userComposition['C'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-q'):
-            userComposition['Q'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-e'):
-            userComposition['E'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-g'):
-            userComposition['G'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-h'):
-            userComposition['H'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-i'):
-            userComposition['I'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-l'):
-            userComposition['L'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-k'):
-            userComposition['K'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-m'):
-            userComposition['M'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-f'):
-            userComposition['F'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-p'):
-            userComposition['P'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-s'):
-            userComposition['S'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-t'):
-            userComposition['T'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-w'):
-            userComposition['W'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-y'):
-            userComposition['Y'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-        elif (arg == '-v'):
-            userComposition['V'] = int(sys.argv[index + 1])
-            composition == "user_specified"
-
-
-
-        ###   OUTPUT DETAILS
-        elif (arg == '--verbose'):
-            verbose = True
-        elif (arg == '--detailed') and (index < len(sys.argv)):  # print detailed output for each (to output file)
-            detailed_output = True
-            detailedOutFile = open(sys.argv[index + 1], 'w')
-            index = index + 1
-        elif (arg == '--minoutput') and (index < len(sys.argv)):
-            minimalOutput = True
-            logsPath = sys.argv[index + 1]
-            index = index + 1
-        elif (arg == '--testoutput') and (index < len(sys.argv)):
-            testing = True
-            testOutputPath = sys.argv[index + 1]
-            index = index + 1
-        elif (arg == '--gettime'):
-            testTimes = True
-        elif (arg == '--jobid') and (index < len(sys.argv)):
-            exeId = sys.argv[index + 1]
-            index = index + 1
-        else:
-            valido = False
-
+        index = index + 1
+    print (valido)
     return valido
+
+
+def getDirectory():
+    directory = 'UuidJobNotEspecified'
+    if '--jobid' in sys.argv:
+        index = sys.argv.index('--jobid')
+        try:
+            directory = sys.argv[index + 1]
+            return directory
+        except:
+            return directory
+    else:
+        return 'UuidJobNotEspecified'
 
 
 DIR_ROOT_INPUT = 'Input'
@@ -237,10 +121,12 @@ parameter_action = ""
 create_directory(DIR_ROOT_INPUT)
 create_directory(DIR_ROOT_OUTPUT)
 
-Id = random.randrange(1000, 9999)
 
-print(" Procesando su cadena...")
-print("Su Id de proceso: " + str(Id))
+Id = getDirectory()
+
+if Id != '0':
+    print(" Procesando su cadena...")
+    print("Su Id de proceso: " + str(Id))
 
 PATH_INPUT = DIR_ROOT_INPUT + '/' + str(Id)
 PATH_OUTPUT = DIR_ROOT_OUTPUT + '/' + str(Id)
